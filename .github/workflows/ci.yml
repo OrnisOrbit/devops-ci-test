@@ -1,31 +1,41 @@
-name: Code Quality Check
+name: CI/CD Pipeline
 
-# Когда запускать? (При любом пуше в ветку main)
 on:
   push:
     branches: [ "main" ]
 
 jobs:
   test:
-    # На какой ОС запускать проверку? (GitHub даст бесплатный сервер на Ubuntu)
     runs-on: ubuntu-latest
-
-    # Шаги (Steps) нашей джобы
     steps:
-    # Шаг 1: Скачать код из репозитория
-    - name: Check out repository
-      uses: actions/checkout@v4
-
-    # Шаг 2: Установить Python
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.11"
-
-    # Шаг 3: Установить зависимости
     - name: Install dependencies
       run: pip install -r requirements.txt
-
-    # Шаг 4: Запустить проверку кода
     - name: Run linter
       run: flake8 app.py
+
+  build-and-push:
+    # Эта джоба запустится ТОЛЬКО если джоба test завершилась успешно!
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+      
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        # Здесь мы формируем имя образа: твой_логин/имя_репозитория:тег
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-first-app:latest
