@@ -1,0 +1,31 @@
+name: Code Quality Check
+
+# Когда запускать? (При любом пуше в ветку main)
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    # На какой ОС запускать проверку? (GitHub даст бесплатный сервер на Ubuntu)
+    runs-on: ubuntu-latest
+
+    # Шаги (Steps) нашей джобы
+    steps:
+    # Шаг 1: Скачать код из репозитория
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    # Шаг 2: Установить Python
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    # Шаг 3: Установить зависимости
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    # Шаг 4: Запустить проверку кода
+    - name: Run linter
+      run: flake8 app.py
