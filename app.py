@@ -1,3 +1,3 @@
 def my_func():
-  print( "Hello, CI/CD!" )
+    print("Hello, CI/CD!")
     return True
